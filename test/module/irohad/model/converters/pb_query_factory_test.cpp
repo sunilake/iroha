@@ -124,9 +124,20 @@ TEST(PbQueryFactoryTest, SerializePager) {
  * @when runQueryTest(), serialize and deserialize test
  * @then validate success.
  */
-TEST(PbQueryFactoryTest, SerializeGetAccountTransactions){
+TEST(PbQueryFactoryTest, SerializeGetAccountTransactions) {
   auto query = QueryGenerator{}.generateGetAccountTransactions(
     0, "123", 0, "test", Pager{iroha::hash256_t{}, 1});
   ASSERT_TRUE(query.has_value());
+}
+
+/**
+ * @given generated GetAccountAssetTransaction
+ * @when runQueryTest(), serialize and deserialize test
+ * @then validate success.
+ */
+TEST(PbQueryFactoryTest, get_account_asset_transactions) {
+  auto query = QueryGenerator{}.generateGetAccountAssetTransactions(
+    0, "admin", 0, "alice", {"a", "b"},
+    iroha::model::Pager{iroha::hash256_t{}, 10});
   runQueryTest(*query);
 }

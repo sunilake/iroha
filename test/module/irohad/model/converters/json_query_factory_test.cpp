@@ -25,6 +25,7 @@
 
 #include "model/queries/get_asset_info.hpp"
 #include "model/queries/get_roles.hpp"
+#include "model/queries/get_account_asset_transactions.hpp"
 
 using namespace iroha;
 using namespace iroha::model;
@@ -227,7 +228,7 @@ TEST(QuerySerializerTest, SerializePager) {
  * @when serialize it, then deserialize the product.
  * @then Validate the generated value is equal to the deserialized value.
  */
-TEST(QuerySerializerTest, SerializeGetAccountTransactions){
+TEST(QuerySerializerTest, SerializeGetAccountTransactions) {
   JsonQueryFactory queryFactory;
   QueryGenerator queryGenerator;
   auto val_ = queryGenerator.generateGetAccountTransactions(
@@ -235,9 +236,21 @@ TEST(QuerySerializerTest, SerializeGetAccountTransactions){
   ASSERT_TRUE(val_.has_value());
   auto val = *val_;
   val->signature = generateSignature(42);
-  auto json = queryFactory.serialize(val);
-  auto ser_val = queryFactory.deserialize(json);
-  ASSERT_TRUE(ser_val.has_value());
-  ASSERT_EQ(iroha::hash(*val), iroha::hash(*ser_val.value()));
-  ASSERT_EQ(val->signature.signature, ser_val.value()->signature.signature);
+  runQueryTest(val);
+}
+
+/**
+ * @given Generated GetAccountAssetTransactions query with random signature.
+ * @when serialize it, then deserialize the product.
+ * @then Validate the generated value is equal to the deserialized value.
+ */
+TEST(QuerySerializerTest, get_account_asset_transactions) {
+  QueryGenerator queryGenerator;
+  auto val_ = queryGenerator.generateGetAccountAssetTransactions(
+    0, "admin", 0, "alice", {"a", "b"},
+    iroha::model::Pager{iroha::hash256_t{}, 10});
+  ASSERT_TRUE(val_.has_value());
+  auto val = *val_;
+  val->signature = generateSignature(42);
+  runQueryTest(val);
 }

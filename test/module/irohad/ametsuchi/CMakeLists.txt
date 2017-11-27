@@ -27,7 +27,15 @@ addtest(get_account_transactions_test get_account_transactions_test.cpp)
 target_link_libraries(get_account_transactions_test
     ametsuchi
     model_generators
-    libs_common)
+    libs_common
+    )
+
+addtest(get_account_asset_transactions_test get_account_asset_transactions_test.cpp)
+target_link_libraries(get_account_asset_transactions_test
+    ametsuchi
+    model_generators
+    libs_common
+    )
 
 add_library(ametsuchi_fixture INTERFACE)
 target_link_libraries(ametsuchi_fixture INTERFACE

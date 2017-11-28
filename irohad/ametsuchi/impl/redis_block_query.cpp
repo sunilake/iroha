@@ -16,9 +16,10 @@
  */
 
 #include "ametsuchi/impl/redis_block_query.hpp"
+#include <deque>
 #include "crypto/hash.hpp"
-#include "model/commands/transfer_asset.hpp"
 #include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/transfer_asset.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -155,26 +156,28 @@ namespace iroha {
         const std::string &account_id,
         const std::vector<std::string> &assets_id,
         const std::shared_ptr<iroha::model::Command> &command) const {
+      // TODO 28/11/17 motxx - Use template from isCommandValid()
+      auto predicate_producer = [&](const auto &check_target_id) {
+        return [&check_target_id, &assets_id](const auto &com) {
+          return check_target_id(com)
+                 and std::any_of(assets_id.begin(),
+                                 assets_id.end(),
+                                 [&com](const auto &asset_id) {
+                                   return asset_id == com.asset_id;
+                                 });
+        };
+      };
+
       return isCommandValid<model::TransferAsset>(
         command,
-        [&account_id, &assets_id](const auto &transfer) {
-          return (transfer.src_account_id == account_id
-                  or transfer.dest_account_id == account_id)
-                 and std::any_of(assets_id.begin(),
-                                 assets_id.end(),
-                                 [&transfer](auto const &a) {
-                                   return a == transfer.asset_id;
-                                 });
-        })
+        predicate_producer([&account_id](const auto &transfer) {
+          return transfer.src_account_id == account_id
+                 or transfer.dest_account_id == account_id;
+        }))
              or isCommandValid<model::AddAssetQuantity>(
-        command, [&account_id, &assets_id](const auto &add) {
-          return add.account_id == account_id
-                 and std::any_of(assets_id.begin(),
-                                 assets_id.end(),
-                                 [&add](auto const &a) {
-                                   return a == add.asset_id;
-                                 });
-        });
+        command, predicate_producer([&account_id](const auto &add) {
+          return add.account_id == account_id;
+        }));
     }
 
     rxcpp::observable<model::Transaction>
@@ -184,28 +187,28 @@ namespace iroha {
         const model::Pager &pager) {
       // TODO 06/11/17 motxx: Improve API by Redis
       return reverseObservable(
-        getBlocksFrom(1)
-          .flat_map([](auto block) {
-            return rxcpp::observable<>::iterate(block.transactions);
-          })
-          // local variables can be captured because this observable will be
-          // subscribed in this function.
-          .take_while([&pager](auto tx) {
-            return iroha::hash(tx) != pager.tx_hash;
-          })
-          .filter([this, &account_id, &assets_id](auto tx) {
-            return std::any_of(
-              tx.commands.begin(),
-              tx.commands.end(),
-              [this, &account_id, &assets_id](auto command) {
-                // This "this->" is required by gcc.
-                return this->hasAccountAssetRelatedCommand(
-                  account_id, assets_id, command);
-              });
-          })
-          // size of retrievable blocks and transactions should be
-          // restricted in stateless validation.
-          .take_last(pager.limit));
+          getBlocksFrom(1)
+              .flat_map([](auto block) {
+                return rxcpp::observable<>::iterate(block.transactions);
+              })
+              // local variables can be captured because this observable will be
+              // subscribed in this function.
+              .take_while([&pager](auto tx) {
+                return iroha::hash(tx) != pager.tx_hash;
+              })
+              .filter([this, &account_id, &assets_id](auto tx) {
+                return std::any_of(
+                    tx.commands.begin(),
+                    tx.commands.end(),
+                    [this, &account_id, &assets_id](auto command) {
+                      // This "this->" is required by gcc.
+                      return this->hasAccountAssetRelatedCommand(
+                          account_id, assets_id, command);
+                    });
+              })
+              // size of retrievable blocks and transactions should be
+              // restricted in stateless validation.
+              .take_last(pager.limit));
     }
 
     rxcpp::observable<boost::optional<model::Transaction>>

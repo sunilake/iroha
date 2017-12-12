@@ -20,10 +20,11 @@
 
 #include <iomanip>
 #include <sstream>
+#include "common/byteutils.hpp"
 #include "interfaces/base/model_primitive.hpp"
-#include "utils/swig_keyword_hider.hpp"
 #include "utils/lazy_initializer.hpp"
 #include "utils/string_builder.hpp"
+#include "utils/swig_keyword_hider.hpp"
 
 namespace shared_model {
   namespace crypto {
@@ -39,12 +40,19 @@ namespace shared_model {
        * @param blob - string to create blob from
        */
       explicit Blob(const std::string &blob) : blob_(blob) {
-        std::stringstream ss;
-        ss << std::hex << std::setfill('0');
-        for (const auto &c : blob_) {
-          ss << std::setw(2) << (static_cast<int>(c) & 0xff);
-        }
-        hex_ = ss.str();
+        hex_ = iroha::bytestringToHexstring(blob_);
+      }
+
+      /**
+       * Creates new Blob object from provided hex string
+       * @param hex - string in hex format to create Blob from
+       * @return created Blob object
+       */
+      static Blob fromHexString(const std::string &hex) {
+        using iroha::operator|;
+        Blob b("");
+        iroha::hexstringToBytestring(hex) | [&](auto &s){b = Blob(s);};
+        return b;
       }
 
       /**
@@ -53,7 +61,8 @@ namespace shared_model {
       virtual const std::string &blob() const { return blob_; }
 
       /**
-       * @return provides human-readable representation of blob without leading 0x
+       * @return provides human-readable representation of blob without leading
+       * 0x
        */
       virtual const std::string &hex() const { return hex_; }
 

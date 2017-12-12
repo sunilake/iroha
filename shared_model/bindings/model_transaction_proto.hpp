@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SIMPLE_TRANSACTION_PROTO_HPP
-#define IROHA_SIMPLE_TRANSACTION_PROTO_HPP
+#ifndef IROHA_SHARED_MODEL_BINDINGS_MODEL_PROTO_HPP
+#define IROHA_SHARED_MODEL_BINDINGS_MODEL_PROTO_HPP
 
 #include "builders/protobuf/transaction.hpp"
 #include "builders/protobuf/unsigned_proto.hpp"
@@ -43,4 +43,4 @@ namespace shared_model {
   }  // namespace bindings
 }  // namespace shared_model
 
-#endif  // IROHA_SIMPLE_TRANSACTION_PROTO_HPP
+#endif  // IROHA_SHARED_MODEL_BINDINGS_MODEL_PROTO_HPP

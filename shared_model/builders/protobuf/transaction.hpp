@@ -99,14 +99,14 @@ namespace shared_model {
 
       NextBuilder<TxCounter> txCounter(
           Transaction::TxCounterType tx_counter) const {
-        return transform<CreatorAccountId>([&](auto &tx) {
+        return transform<TxCounter>([&](auto &tx) {
           tx.mutable_payload()->set_tx_counter(tx_counter);
         });
       }
 
       NextBuilder<CreatedTime> createdTime(
           interface::types::TimestampType created_time) const {
-        return transform<CreatorAccountId>([&](auto &tx) {
+        return transform<CreatedTime>([&](auto &tx) {
           tx.mutable_payload()->set_created_time(created_time);
         });
       }

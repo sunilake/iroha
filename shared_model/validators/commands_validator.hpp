@@ -294,7 +294,8 @@ namespace shared_model {
        * @param tx
        * @return Answer containing found error if any
        */
-      Answer validate(detail::PolymorphicWrapper<interface::Transaction> tx) {
+      Answer validate(
+          detail::PolymorphicWrapper<interface::Transaction> tx) const {
         Answer answer;
         for (auto &command : tx->commands()) {
           auto reason =

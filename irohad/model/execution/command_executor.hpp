@@ -39,7 +39,7 @@ namespace iroha {
        * @param creator - transaction creators account
        * @return true, if validation is successful
        */
-      bool validate(const Command &command, ametsuchi::WsvQuery &queries,
+      virtual bool validate(const Command &command, ametsuchi::WsvQuery &queries,
                     const Account &creator);
 
       /**
@@ -83,6 +83,8 @@ namespace iroha {
       AppendRoleExecutor();
       bool execute(const Command &command, ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands) override;
+      bool validate(const Command &command, ametsuchi::WsvQuery &queries,
+               const Account &creator);
 
      protected:
       bool hasPermissions(const Command &command, ametsuchi::WsvQuery &queries,
